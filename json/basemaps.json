@@ -1,0 +1,82 @@
+[
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 1,
+    "name": "Esri Emagery",
+	"images": "esri_i.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/USA_Topo_Maps/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 2,
+    "name": "Esri Topografi",
+	"images": "esrI_topo.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 3,
+    "name": "Esri Nat Geo",
+	"images": "esri_NatGeo.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 4,
+    "name": "Esri Physical",
+	"images": "esri_physical.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 5,
+    "name": "Esri StreetMap",
+	"images": "esri_street_map.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 6,
+    "name": "Esri Terain",
+	"images": "esri_terrain.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 7,
+    "name": "Esri Topografi",
+	"images": "esrI_topo.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 8,
+    "name": "Esri Relif",
+	"images": "esri_relif.png"
+  },
+  {
+    "url": "https://geoservices.big.go.id/rbi/rest/services/BASEMAP/Rupabumi_Indonesia/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 9,
+    "name": "RBI-BIG",
+	"images": "rbi.png"
+  },
+  {
+    "url": "https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    "params": null,
+    "type": "ESRI",
+    "id": 10,
+    "name": "Esri -Dark Gray",
+	"images": "esri_darkgray.png"
+  }
+]
