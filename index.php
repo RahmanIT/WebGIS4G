@@ -187,8 +187,8 @@ BasemapSource = new ol.source.XYZ({
         nama : 'Batas Administrasi',
         LayerType : "OGC",
         source: new ol.source.TileWMS({
-        url: 'https://geoservice.kalselprov.go.id/geoserver/BIROPEMOTDA/wms?',
-        params: {'LAYERS': 'BIROPEMOTDA:PROVINSI_ADMINISTRASI_LN_50K', 'TILED': true },
+        url: 'https://geoservice.kalselprov.go.id/geoserver/wms?',
+        params: {'LAYERS': 'BIROPEMOTDA:PROVINSI_ADMINISTRASI_LN_50K' },
         serverType: 'geoserver',
         }) 
     }); 
