@@ -21,6 +21,47 @@
 	    position:absolute;
 	  }
 	  
+    .ol-popup {
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #cccccc;
+        bottom: 12px;
+        left: -50px;
+        min-width: 280px;
+      }
+      .ol-popup:after, .ol-popup:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+      .ol-popup:after {
+        border-top-color: white;
+        border-width: 10px;
+        left: 48px;
+        margin-left: -10px;
+      }
+      .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        left: 48px;
+        margin-left: -11px;
+      }
+      .ol-popup-closer {
+        text-decoration: none;
+        position: absolute;
+        top: 2px;
+        right: 8px;
+      }
+      .ol-popup-closer:after {
+        content: "✖";
+      }
     </style>
 <link href="dist/ol.css" rel="stylesheet">
 <script src="dist/ol.js"></script>
@@ -57,6 +98,12 @@
 	</nav>
 
 	<div id="map" class="map"></div>
+
+  <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+  </div>
+
 	<div id="KooInfo" style="z-index:0; top:60px; left:200px; position:absolute; color:white;">Koordinat</div>
 	<div id="Menu"  class="DlgTool" style="bottom:10px; left:300px;">
 		<button type="button" class="btn btn-outline-success" onclick="Hs_Basemap()">Basemap</button>
@@ -77,6 +124,33 @@
 </div>
 <script>
 var BasemapSource, BasemapLayer;
+
+var container = document.getElementById('popup');
+var content = document.getElementById('popup-content');
+var closer = document.getElementById('popup-closer');
+
+/**
+ * Create an overlay to anchor the popup to the map.
+ */
+var overlay = new ol.Overlay({
+  element: container,
+  autoPan: {
+    animation: {
+      duration: 250,
+    },
+  },
+});
+
+/**
+ * Add a click handler to hide the popup.
+ * @return {boolean} Don't follow the href.
+ */
+closer.onclick = function () {
+  overlay.setPosition(undefined);
+  closer.blur();
+  return false;
+};
+
 document.getElementById("map").style.height = (screen.height - 180) +'px';
 
 BasemapSource = new ol.source.XYZ({
@@ -93,7 +167,7 @@ BasemapSource = new ol.source.XYZ({
                 source: new ol.source.TileWMS({
                 url: 'http://localhost:8080/geoserver/wms?',
                 params: {'LAYERS': 'SIG4G:JALAN_LN', 'TILED': true },
-                serverType: 'geoserver',
+                //serverType: 'geoserver',
             }) 
         }); 
 
@@ -102,7 +176,7 @@ BasemapSource = new ol.source.XYZ({
         source: new ol.source.TileWMS({
         url: 'http://localhost:8080/geoserver/wms?',
         params: {'LAYERS': 'SIG4G:BANGUNAN_PT', 'TILED': true },
-        serverType: 'geoserver',
+        //serverType: 'geoserver',
         }) 
     }); 
 
@@ -111,7 +185,7 @@ BasemapSource = new ol.source.XYZ({
         source: new ol.source.TileWMS({
         url: 'https://geoservice.kalselprov.go.id/geoserver/BIROPEMOTDA/wms?',
         params: {'LAYERS': 'BIROPEMOTDA:PROVINSI_ADMINISTRASI_LN_50K', 'TILED': true },
-        serverType: 'geoserver',
+        //serverType: 'geoserver',
         }) 
     }); 
 
@@ -121,6 +195,7 @@ var layers =[BasemapLayer,Layer1,Layer2,Layer3]
 var map = new ol.Map({
   layers: layers,
   target: 'map',
+  overlays: [overlay],
   view: new ol.View({
     center: ol.proj.fromLonLat([115.4000, -2.295333]),
     zoom: 13,
@@ -133,6 +208,65 @@ map.on ('pointermove', function(event){
    var coord4326 = ol.proj.transform(coord3857,'EPSG:3857','EPSG:4326');
    document.getElementById("KooInfo").innerHTML = ol.coordinate.toStringHDMS(coord4326);
 }); 
+
+/**
+ * Add a click handler to the map to render the popup.
+ */
+map.on('singleclick', function (evt) {
+  var coordinate = evt.coordinate;
+  var hdms = ol.coordinate.toStringHDMS(coordinate);
+  var view = map.getView();
+  var viewResolution = view.getResolution();
+  var coord4326 = ol.proj.transform(coordinate,'EPSG:3857','EPSG:4326');
+  var loopingData = true;
+  var Source = Layer2.getSource();
+  var url = Source.getFeatureInfoUrl(coordinate, viewResolution, view.getProjection(),{'INFO_FORMAT': 'application/json', 'FEATURE_COUNT':1});
+  console.log(url);
+  map.getLayers().forEach(function(layer){    
+    if(loopingData == true){
+      if(layer.get('visible') == true){
+        var s= layer.getSource();
+        var url = s.getFeatureInfoUrl(coordinate, viewResolution, view.getProjection(),{'INFO_FORMAT': 'application/json', 'FEATURE_COUNT':1});
+        console.log(url);  
+        if(url){
+            var urld = encodeURIComponent(url);
+            $.ajax({
+							url: "proxy.php",
+							data: "url="+urld,
+							cache: false,
+							async: false,
+							success: function(msg){	
+							          console.log(msg);
+                        try {
+                          data = JSON.parse(decodeURIComponent(msg));
+                          console.log(data);
+                          loopingData = false;
+                        } catch (error) {
+                          //
+                          loopingData = true;
+                        };
+
+                        var hmlhpopup="";								   
+                        infos = data['features'][0]['properties'];
+                        for (var key in infos) {
+                          var value = infos[key];
+                          content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
+                          hmlhpopup = hmlhpopup + content_html;										
+                        };
+                        content.innerHTML = '<p>You clicked here:</p><code>' + hdms + '</code>'+
+                        "<table class='table table-ligh table-striped table-bordered table-sm'><tbody>"+hmlhpopup+ "</tbody></table>" ;
+			
+								      } //end success
+						});	 //end ajax
+          };
+      };
+    };
+});
+
+
+  
+  overlay.setPosition(coordinate);
+});
 
 
 function LoadDaftarLayer(){
