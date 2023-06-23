@@ -116,7 +116,7 @@
 	  <ul id="LayerTree" class="list-group list-group-flush"></ul>
 	</div>
 
-  <div id="BoxBasemap" class="card DlgTool col-4" style="width: 27rem; left:300px; bottom:150px; display:block;">
+  <div id="BoxBasemap" class="card DlgTool col-4" style="width: 27rem; display:none; left:300px; bottom:150px;">
 	  <div class="card-header">	Peta Dasar </div>
 	  <div id="BasemapLayers" class="list-group list-group-flush" style="display:inline; max-height:150px; overflow:auto;"></div>
 	</div>
@@ -159,33 +159,37 @@ BasemapSource = new ol.source.XYZ({
  
  BasemapLayer =  new ol.layer.Tile({
                     source: BasemapSource,
-                    nama : 'Peta Dasar'
+                    nama : 'Peta Dasar',
+                    LayerType : "ESRI",
                 });
 
  var Layer1 = new ol.layer.Tile({
                 nama : 'Jalan',
+                LayerType : "OGC",
                 source: new ol.source.TileWMS({
                 url: 'http://localhost:8080/geoserver/wms?',
                 params: {'LAYERS': 'SIG4G:JALAN_LN', 'TILED': true },
-                //serverType: 'geoserver',
+                serverType: 'geoserver',
             }) 
         }); 
 
     var Layer2 = new ol.layer.Tile({
         nama : 'Bangunan',
+        LayerType : "OGC",
         source: new ol.source.TileWMS({
         url: 'http://localhost:8080/geoserver/wms?',
         params: {'LAYERS': 'SIG4G:BANGUNAN_PT', 'TILED': true },
-        //serverType: 'geoserver',
+        serverType: 'geoserver',
         }) 
     }); 
 
     var Layer3 = new ol.layer.Tile({
         nama : 'Batas Administrasi',
+        LayerType : "OGC",
         source: new ol.source.TileWMS({
         url: 'https://geoservice.kalselprov.go.id/geoserver/BIROPEMOTDA/wms?',
         params: {'LAYERS': 'BIROPEMOTDA:PROVINSI_ADMINISTRASI_LN_50K', 'TILED': true },
-        //serverType: 'geoserver',
+        serverType: 'geoserver',
         }) 
     }); 
 
@@ -197,13 +201,12 @@ var map = new ol.Map({
   target: 'map',
   overlays: [overlay],
   view: new ol.View({
-    center: ol.proj.fromLonLat([115.4000, -2.295333]),
-    zoom: 13,
+    center: ol.proj.fromLonLat([115.45770, -2.330333]),
+    zoom: 15,
   }),
 });
 
 map.on ('pointermove', function(event){
-   //document.getElementById("KooInfo").innerHTML = event.coordinate;
    coord3857 = event.coordinate;
    var coord4326 = ol.proj.transform(coord3857,'EPSG:3857','EPSG:4326');
    document.getElementById("KooInfo").innerHTML = ol.coordinate.toStringHDMS(coord4326);
@@ -217,16 +220,11 @@ map.on('singleclick', function (evt) {
   var hdms = ol.coordinate.toStringHDMS(coordinate);
   var view = map.getView();
   var viewResolution = view.getResolution();
-  var coord4326 = ol.proj.transform(coordinate,'EPSG:3857','EPSG:4326');
   var loopingData = true;
-  var Source = Layer2.getSource();
-  var url = Source.getFeatureInfoUrl(coordinate, viewResolution, view.getProjection(),{'INFO_FORMAT': 'application/json', 'FEATURE_COUNT':1});
-  console.log(url);
   map.getLayers().forEach(function(layer){    
     if(loopingData == true){
-      if(layer.get('visible') == true){
-        var s= layer.getSource();
-        var url = s.getFeatureInfoUrl(coordinate, viewResolution, view.getProjection(),{'INFO_FORMAT': 'application/json', 'FEATURE_COUNT':1});
+      if(layer.get('visible') == true && layer.get('LayerType') == "OGC"){
+        var url = layer.getSource().getFeatureInfoUrl(coordinate, viewResolution, view.getProjection(),{'INFO_FORMAT': 'application/json', 'FEATURE_COUNT':1});
         console.log(url);  
         if(url){
             var urld = encodeURIComponent(url);
@@ -236,36 +234,35 @@ map.on('singleclick', function (evt) {
 							cache: false,
 							async: false,
 							success: function(msg){	
-							          console.log(msg);
-                        try {
-                          data = JSON.parse(decodeURIComponent(msg));
-                          console.log(data);
-                          loopingData = false;
+                        var hmlhpopup="";                        
+                        try {                          
+                          console.log(msg);
+                          if(msg == "0"){
+                              loopingData = true;
+                            }else{
+                              var data = JSON.parse(decodeURIComponent(msg));
+                              infos = data['features'][0]['properties'];
+                              for (var key in infos) {
+                                var value = infos[key];
+                                content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
+                                hmlhpopup = hmlhpopup + content_html;										
+                              };
+                              loopingData = false;
+                            }
+                          
                         } catch (error) {
                           //
                           loopingData = true;
                         };
-
-                        var hmlhpopup="";								   
-                        infos = data['features'][0]['properties'];
-                        for (var key in infos) {
-                          var value = infos[key];
-                          content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
-                          hmlhpopup = hmlhpopup + content_html;										
-                        };
-                        content.innerHTML = '<p>You clicked here:</p><code>' + hdms + '</code>'+
+                        content.innerHTML = '<code>' + hdms + '</code>'+
                         "<table class='table table-ligh table-striped table-bordered table-sm'><tbody>"+hmlhpopup+ "</tbody></table>" ;
-			
+                        overlay.setPosition(coordinate);			
 								      } //end success
 						});	 //end ajax
-          };
-      };
-    };
-});
-
-
-  
-  overlay.setPosition(coordinate);
+          }; // end jika variabel URL ada
+      };  // end jikan layar aktif dan type nya adalah geoserver
+    }; // jika perulangan layer TRUE / data layer tiadak di temukan
+  }); // end looping layer list
 });
 
 
