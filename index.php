@@ -116,7 +116,7 @@
 	  <ul id="LayerTree" class="list-group list-group-flush"></ul>
 	</div>
 
-  <div id="BoxBasemap" class="card DlgTool col-4" style="width: 27rem; display:none; left:300px; bottom:150px;">
+  <div id="BoxBasemap" class="card DlgTool col-4" style="width: 27rem; display:none; left:300px; bottom:60px;">
 	  <div class="card-header">	Peta Dasar </div>
 	  <div id="BasemapLayers" class="list-group list-group-flush" style="display:inline; max-height:150px; overflow:auto;"></div>
 	</div>
@@ -124,7 +124,6 @@
 </div>
 <script>
 var BasemapSource, BasemapLayer;
-
 var container = document.getElementById('popup');
 var content = document.getElementById('popup-content');
 var closer = document.getElementById('popup-closer');
@@ -150,19 +149,27 @@ closer.onclick = function () {
   closer.blur();
   return false;
 };
-
+/**
+ * setting tinggi map sesuai screen layar.
+ */
 document.getElementById("map").style.height = (screen.height - 180) +'px';
-
+/**
+ * definis sumber pata dasar.
+ */
 BasemapSource = new ol.source.XYZ({
             url: 'https://geoservices.big.go.id/rbi/rest/services/BASEMAP/Rupabumi_Indonesia/MapServer/tile/{z}/{y}/{x}',
             });
- 
+ /**
+ * definis varibael layer pata dasar.
+ */
  BasemapLayer =  new ol.layer.Tile({
                     source: BasemapSource,
                     nama : 'Peta Dasar',
                     LayerType : "ESRI",
                 });
-
+ /**
+ * definis varibael layer tematik.
+ */
  var Layer1 = new ol.layer.Tile({
                 nama : 'Jalan',
                 LayerType : "OGC",
@@ -193,9 +200,13 @@ BasemapSource = new ol.source.XYZ({
         }) 
     }); 
 
-
+ /**
+ * definis arry semua layers.
+ */
 var layers =[BasemapLayer,Layer1,Layer2,Layer3]
-
+ /**
+ * definis varibael utama Map.
+ */
 var map = new ol.Map({
   layers: layers,
   target: 'map',
@@ -205,7 +216,9 @@ var map = new ol.Map({
     zoom: 15,
   }),
 });
-
+ /**
+ * definis koordinat posisi korusur / even mouse move.
+ */
 map.on ('pointermove', function(event){
    coord3857 = event.coordinate;
    var coord4326 = ol.proj.transform(coord3857,'EPSG:3857','EPSG:4326');
@@ -214,10 +227,13 @@ map.on ('pointermove', function(event){
 
 /**
  * Add a click handler to the map to render the popup.
+ * menampilkan data saat map di klik.
  */
 map.on('singleclick', function (evt) {
   var coordinate = evt.coordinate;
-  var hdms = ol.coordinate.toStringHDMS(coordinate);
+  var coord4326 = ol.proj.transform(coordinate,'EPSG:3857','EPSG:4326');
+  var hdms = ol.coordinate.toStringHDMS(coord4326);
+  
   var view = map.getView();
   var viewResolution = view.getResolution();
   var loopingData = true;
@@ -265,7 +281,9 @@ map.on('singleclick', function (evt) {
   }); // end looping layer list
 });
 
-
+ /**
+ * definis struktru HTML layer tree/ Daftat Layer Panel.
+ */
 function LoadDaftarLayer(){
   var n =0;
   map.getLayers().forEach(function(Layer){
@@ -275,9 +293,11 @@ function LoadDaftarLayer(){
 	  n++;
   });
 }
-
 LoadDaftarLayer();
 
+ /**
+ * defini fungsi objek layer opacity dan layer visbile.
+ */
 function bindInputs(layerid, layer) {
   var visibilityInput = $(layerid + '_VBS');
   visibilityInput.on('change', function () {
@@ -292,7 +312,9 @@ function bindInputs(layerid, layer) {
   opacityInput.val(String(layer.getOpacity()));
 }
 
-
+ /**
+ * setup menghubungkan fungsi Objek HTML layer ke fungs Layers.Map.
+ */
 function setup(id, group) {
   group.getLayers().forEach(function (layer, i) {
     var layerid = id + i;
@@ -304,7 +326,9 @@ function setup(id, group) {
 }
 setup('#layer', map.getLayerGroup());
 
-
+ /**
+ * membuat menu daftat peta dasar dalam BOX basemaps.
+ */
 function LoadPetaDasar(){
   $.ajax({
     url: "/WebGIS4G/json/basemaps.json",
@@ -338,7 +362,7 @@ if ( document.getElementById("BoxtreeLayer").style.display == "none"){
 	}else{
 		document.getElementById("BoxtreeLayer").style.display = "none"
  }
-}
+};
 
 function Hs_Basemap(){
 if (document.getElementById("BoxBasemap").style.display == "none"){
@@ -346,10 +370,7 @@ if (document.getElementById("BoxBasemap").style.display == "none"){
 	}else{
 		document.getElementById("BoxBasemap").style.display = "none"
  }
-}
-
-
-
+};
 </script>
         <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
