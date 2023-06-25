@@ -287,7 +287,7 @@ map.on('singleclick', function (evt) {
 function LoadDaftarLayer(){
   var n =0;
   map.getLayers().forEach(function(Layer){
-      var Ly = '<li class="list-group-item" id="layer'+n+'_LI"><input type="checkbox" id="layer'+n+'_VBS" > '+Layer.get("nama")+'opacity <input id="layer'+n+'_OPC" class="opacity" type="range" min="0" max="1" step="0.01"/></li>';
+      var Ly = '<li class="list-group-item" id="layer'+n+'_LI"><input type="checkbox" id="layer'+n+'_VBS" > '+Layer.get("nama")+'<br/>opacity <input id="layer'+n+'_OPC" class="opacity" type="range" min="0" max="1" step="0.01"/></li>';
 	  
 	  document.getElementById("LayerTree").innerHTML = Ly + document.getElementById("LayerTree").innerHTML 
 	  n++;
